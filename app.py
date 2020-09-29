@@ -9,131 +9,164 @@ from dash.dependencies import Input, Output, State
 from scipy.stats import gaussian_kde
 
 # Tutorial: https://dash.plotly.com/layout
+
+################################
+# 0. colors
+################################
+
+grey = '#f7f4eb'
+teal = '#3C7A89'
+purple = '#37123C'
+rose = '#945D5E'
+
+################################
+# 1. Data
+################################
+
 df = pd.read_csv('income_data.csv')
 kernel_original = gaussian_kde(df.income, weights=df.weights)
 # generate equally spaced X values
 xs = np.linspace(min(df.income), max(df.income), 1000)
 dist_original = kernel_original(xs)
 
+################################
+# 2. App Layout
+################################
 
 app = dash.Dash(__name__)
 server = app.server
 
 app.layout = html.Div(children=[
-    html.H1(children='Efectos en pobreza y desigualdad del Covid-19'),
 
-    # select reference lines
-    dcc.Checklist(
-        id='reference-lines',
-        options=[
-            {'label': u'Salario Mínimo ----', 'value': 'Minimum Wage'},
-            {'label': u'Línea de Pobreza ---', 'value': 'Poverty Line'},
-            {'label': u'Línea de Vulnerabilidad ---', 'value': 'Vulnerability '
-                                                               'Line'}
-        ],
-        labelStyle={'display': 'inline-block'}
+    html.Header(
+        html.H1(children='Efectos en pobreza y desigualdad '
+                                          'del Covid-19'),
+        style={'color':'#945D5E'}
     ),
 
-    dcc.Graph(
-        id='histogram'
-    ),
+    html.P(
+        children= u"Esta aplicación visualiza de forma interactiva los "
+                  u"efectos en la distribucuión del ingreso de posibles "
+                  u"choques a algunos sectores productivos. Por el momento, "
+                  u"los datos son simulados."
+                u" Para empezar a interactuar con la aplicación, seleccione "
+                  u"los sectores que recibirán un choque e "
+                 u"introduzca el porcentaje de los ingresos originales "
+                 u"que recibirán. Por ejemplo, al seleccionar el sector "
+                 u" 'transporte' e introducir 60%, se reducirán los "
+                 u"ingresos de todas las personas pertenecientes a este "
+                 u"sector al 60% de sus ingresos originales. Al "
+                 u"finalizar, el botón de 'aplicar' actualizará la "
+                 u"gráfica."),
+    html.Hr(),
 
-    # Explanation
-    html.Div(children=u"Seleccione los sectores que recibirán un choque e "
-                      u"introduzca el porcentaje de los ingresos originales "
-                      u"que recibirán. Por ejemplo, al seleccionar el sector "
-                      u" 'transporte' e introducir 60%, se reducirán los "
-                      u"ingresos de todas las personas pertenecientes a este "
-                      u"sector al 60% de sus ingresos originales. Al "
-                      u"finalizar, el botón de 'aplicar' actualizará la "
-                      u"gráfica.",
-             className="twelve columns", style={'marginBottom': '2em'}),
 
-    # Sector-Shock pair - Titles
-    html.Div([
-        html.Div(children="Sector",
-                 className='three columns'),
+    #-------------------------
+    # user input
+    #-------------------------
+    html.Div(
+        className='three columns',
+        children=[
 
-        html.Div(children=u"Nuevo ingreso (%)",
-                 className='three columns'),
-
-    ], className='row', style={'marginBottom': '1em'}),
-
-    # Sector-Shock pair (1)
-    html.Div([
+        # Sector-Shock pair (1)
         html.Div([
-            dcc.Checklist(
-                style=dict(width=150, height=50),
-                id='sector1',
-                options=[
-                    {'label': 'Transporte', 'value': 1}
-                ],
-            )], className='three columns'),
+            html.Div([
+                dcc.Checklist(
+                    id='sector1',
+                    options=[
+                        {'label': 'Transporte', 'value': 1}
+                    ],
+                )], style={'font-size': '1em', 'color':'#945D5E'}),
 
+            html.Div([
+                dcc.Input(
+                    id='shock1',
+                    type='number',
+                    min=0,
+                    step=1,
+                    max=100,
+                    value=100
+                )], style={'marginBottom': '2em'}),
+
+        ]),
+
+        # Sector-Shock pair (2)
         html.Div([
-            dcc.Input(
-                style=dict(width=80, height=30),
-                id='shock1',
-                type='number',
-                min=0,
-                step=1,
-                max=100,
-                value=100
-            )], className='two columns'),
+            html.Div([
+                dcc.Checklist(
+                    id='sector2',
+                    options=[
+                        {'label': u'Construcción', 'value': 2}
+                    ],
+                )], style={'font-size': '1em', 'color':'#945D5E'}),
 
-    ], className='row'),
+            html.Div([
+                dcc.Input(
+                    id='shock2',
+                    type='number',
+                    min=0,
+                    max=100,
+                    step=1,
+                    value=100
+                )], style={'marginBottom': '2em'})
+        ]),
 
-    # Sector-Shock pair (2)
-    html.Div([
+        # Sector-Shock pair (3)
         html.Div([
-            dcc.Checklist(
-                style=dict(width=120, height=50),
-                id='sector2',
-                options=[
-                    {'label': u'Construcción', 'value': 2}
-                ],
-            )], className='three columns'),
+            html.Div([
+                dcc.Checklist(
+                    id='sector3',
+                    options=[
+                        {'label': 'Manufactura', 'value': 3}
+                    ],
+                )], style={'font-size': '1em', 'color':'#945D5E'}),
 
-        html.Div([
-            dcc.Input(
-                style=dict(width=80, height=30),
-                id='shock2',
-                type='number',
-                min=0,
-                max=100,
-                step=1,
-                value=100
-            )], className='two columns'),
+            html.Div([
+                dcc.Input(
+                    id='shock3',
+                    type='number',
+                    min=0,
+                    max=100,
+                    step=1,
+                    value=100
+                )], style={'marginBottom': '3em'})
+        ]),
 
-    ], className='row'),
+        # button at the end
+        html.Button(id='apply-button', n_clicks=0, children='Aplicar',
+                    style={'background-color': rose,
+                           'color': 'white'})
+        ]),
 
-    # Sector-Shock pair (3)
-    html.Div([
-        html.Div([
-            dcc.Checklist(
-                style=dict(width=120, height=50),
-                id='sector3',
-                options=[
-                    {'label': 'Manufactura', 'value': 3}
-                ],
-            )], className='three columns'),
+    # -------------------------
+    # plot
+    # -------------------------
+    html.Div(
+        className= 'eight columns',
+        children=[
+        # select reference lines
+        dcc.Checklist(
+            id='reference-lines',
+            options=[
+                {'label': u'Salario Mínimo -',
+                 'value': 'Minimum Wage'},
+                {'label': u'Línea de Pobreza -',
+                 'value': 'Poverty Line'},
+                {'label': u'Línea de Vulnerabilidad -',
+                 'value': 'Vulnerability Line'}
+            ],
+            labelStyle={'display': 'inline-block'},
+            style={'background-color': 'white'}
+            ),
+        dcc.Graph(id='histogram')
+        ])
 
-        html.Div([
-            dcc.Input(
-                style=dict(width=80, height=30),
-                id='shock3',
-                type='number',
-                min=0,
-                max=100,
-                step=1,
-                value=100
-            )], className='two columns'),
+], className='row', style={'background-color': 'white'})
 
-    ], className='row', style={'marginBottom': '3em'}),
 
-    html.Button(id='apply-button', n_clicks=0, children='Aplicar')
-])
-
+################################
+# 3. App Callbacks
+################################
 
 @app.callback(
     Output('histogram', 'figure'),
@@ -193,31 +226,36 @@ def update_figre(n_clicks,
     fig = go.Figure(layout=go.Layout(
         title=go.layout.Title(text=u"Distribución del ingreso, pobreza y "
                                    u"vulnerabilidad"),
+        xaxis=go.layout.XAxis(title="Ingreso (en miles de pesos)"),
         plot_bgcolor='white',
         paper_bgcolor='white',
         font_color='grey')
     )
+
+    # modified distribution
+    fig.add_trace(go.Scatter(x=xs, y=kernel_shock(xs),
+                             mode='lines',
+                             name=u'Distribución Modificada',
+                             line=dict(color='#DDA77B')))
+
     # Original distribution
     fig.add_trace(go.Scatter(x=xs, y=dist_original,
                              mode='lines',
                              name=u'Distribución Original',
-                             line=dict(color='blue')))
+                             line=dict(color='#37123C')))
 
-    fig.add_trace(go.Scatter(x=xs, y=kernel_shock(xs),
-                             mode='lines',
-                             name=u'Distribución Modificada',
-                             line=dict(color='pink')))
 
     lines = []
 
     if reference_lines is not None:
         if 'Minimum Wage' in reference_lines:
             fig.add_trace(go.Scatter(
-                x=[700],
-                y=[max(dist_original)],
-                text=u'Salario Mínimo',
+                x=[700+40],
+                y=[0.0005],
+                text=u'Salario<br>Mínimo',
                 mode="text",
-                showlegend=False
+                showlegend=False,
+                textfont={'color': 'red'}
             ))
 
             MW = dict(
@@ -235,19 +273,20 @@ def update_figre(n_clicks,
 
         if 'Poverty Line' in reference_lines:
             fig.add_trace(go.Scatter(
-                x=[400],
+                x=[200+50],
                 y=[max(dist_original)],
-                text=u'Línea de pobreza',
+                text=u'Línea de<br>pobreza',
                 mode="text",
-                showlegend=False
+                showlegend=False,
+                textfont={'color': teal}
             ))
 
             PL = dict(
                 type='line',
                 yref='paper', y0=0, y1=1,
-                xref='x', x0=400, x1=400,
+                xref='x', x0=200, x1=200,
                 line=dict(
-                    color="yellow",
+                    color=teal,
                     width=2,
                     dash="dashdot"
                 )
@@ -257,19 +296,20 @@ def update_figre(n_clicks,
 
         if 'Vulnerability Line' in reference_lines:
             fig.add_trace(go.Scatter(
-                x=[200],
+                x=[450+65],
                 y=[max(dist_original)],
-                text=u'Línea de Vulnerabilidad',
+                text=u'Línea de<br>vulnerabilidad',
                 mode="text",
-                showlegend=False
+                showlegend=False,
+                textfont={'color': "#c79408"}
             ))
 
             VL = dict(
                 type='line',
                 yref='paper', y0=0, y1=1,
-                xref='x', x0=200, x1=200,
+                xref='x', x0=450, x1=450,
                 line=dict(
-                    color="purple",
+                    color="#c79408",
                     width=2,
                     dash="dashdot"
                 )
@@ -281,6 +321,9 @@ def update_figre(n_clicks,
 
     return fig
 
+################################
+# 4. Run App
+################################
 
 if __name__ == '__main__':
     app.run_server(host='0.0.0.0', port=8050, debug=True)
