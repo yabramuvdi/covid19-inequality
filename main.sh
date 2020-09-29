@@ -10,5 +10,5 @@ pip3 install gunicorn
 # tmux new -s app
 
 python3 data_generation.py
-gunicorn app:app.server -b :8000
+gunicorn app:server -b :8000
 #python3 app.py
