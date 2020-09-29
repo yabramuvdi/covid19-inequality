@@ -6,8 +6,7 @@ n = 10000
 
 income = np.random.normal(loc=800, scale=200, size=n)
 weights = np.random.randint(1,10000,size=n)
-sector = np.random.randint(1,7,size=n)
-print(sum(weights))
+sector = np.random.randint(1,4,size=n)
 
 # save data
 df = pd.DataFrame({'income': income, 'weights': weights, 'sector': sector})
