@@ -4,6 +4,7 @@ import dash_html_components as html
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import flask
 from dash.dependencies import Input, Output, State
 from scipy.stats import gaussian_kde
 
@@ -15,7 +16,9 @@ kernel_original = gaussian_kde(df.income, weights=df.weights)
 xs = np.linspace(min(df.income), max(df.income), 1000)
 dist_original = kernel_original(xs)
 
-app = dash.Dash(__name__)
+
+server = flask.Flask(__name__) # define flask app.server
+app = dash.Dash(__name__, server=server)
 
 app.layout = html.Div(children=[
     html.H1(children='Efectos en pobreza y desigualdad del Covid-19'),
@@ -281,4 +284,4 @@ def update_figre(n_clicks,
 
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', port=8050, debug=True)
+    app.run_server(host='0.0.0.0', port=8050, debug=False)
